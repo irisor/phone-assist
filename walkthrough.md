@@ -9,7 +9,6 @@ I have successfully built the **Phone Assist App** as a premium Vanilla Web Appl
 
 ## Features Implemented
 -   **Real-time Transcription**: Uses the Web Speech API to listen to your partner.
--   **Manual Diarization**: Use the **"Mic Input" toggle** at the top to switch between "Partner" and "Me".
 -   **Push-to-Mute (Walkie-Talkie)**: 
     -   **Desktop**: Hold **Alt Key** to temporarily mute the mic.
     -   **Mobile**: Tap the **"Tap to Mute"** button (Toggle).

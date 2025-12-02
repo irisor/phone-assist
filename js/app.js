@@ -142,16 +142,16 @@ class App {
     }
 
     async handleIncomingSpeech(text, isFinal) {
-        // Check toggle state: Checked = Me, Unchecked = Partner
-        const isMe = document.getElementById('speaker-toggle').checked;
+        // Mic always listens to Partner per user request
+        const isMe = false;
 
         const partnerLang = document.getElementById('partner-lang').value;
         const userLang = document.getElementById('user-lang').value;
 
-        // Determine Source/Target based on who is speaking
-        const sourceLang = isMe ? userLang : partnerLang;
-        const targetLang = isMe ? partnerLang : userLang;
-        const speakerName = isMe ? 'User' : 'Partner';
+        // Always Partner -> User
+        const sourceLang = partnerLang;
+        const targetLang = userLang;
+        const speakerName = 'Partner';
 
         // If it's a new utterance, create a new ID
         if (!this.currentTranscriptId) {
