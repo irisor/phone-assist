@@ -64,3 +64,54 @@ function convertNumberDE(n) {
 
     return n.toString();
 }
+
+export function formatForSpeech(text, lang = 'en') {
+    let formatted = text;
+
+    // 1. Convert Special Characters to universal English names
+    // These work across all languages and are easily understood
+    const specialChars = {
+        '&': ' ampersand ',
+        '%': ' percent ',
+        '+': ' plus ',
+        '-': ' minus ',
+        '=': ' equals ',
+        '*': ' asterisk ',
+        '/': ' slash ',
+        '\\': ' backslash ',
+        '?': ' question mark ',
+        '!': ' exclamation mark ',
+        '@': ' at ',
+        '#': ' hash ',
+        '$': ' dollar ',
+        '€': ' euro ',
+        '£': ' pound ',
+        '¥': ' yen ',
+        '(': ' open parenthesis ',
+        ')': ' close parenthesis ',
+        '[': ' open bracket ',
+        ']': ' close bracket ',
+        '{': ' open brace ',
+        '}': ' close brace ',
+        '<': ' less than ',
+        '>': ' greater than ',
+        '_': ' underscore ',
+        '|': ' pipe ',
+        '~': ' tilde ',
+        '^': ' caret '
+    };
+
+    // Replace special chars
+    for (const [char, replacement] of Object.entries(specialChars)) {
+        // Escape special regex characters
+        const escapedChar = char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escapedChar, 'g');
+        formatted = formatted.replace(regex, replacement);
+    }
+
+    // 2. Convert Numbers to words (language-aware)
+    formatted = numberToWords(formatted, lang);
+
+    // 3. Cleanup multiple spaces
+    return formatted.replace(/\s+/g, ' ').trim();
+}

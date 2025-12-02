@@ -158,8 +158,8 @@ class App {
             this.currentTranscriptId = Date.now();
         }
 
-        // Translate live
-        const translated = await this.translationService.translate(text, sourceLang, targetLang);
+        // Translate live (Partner -> User) - NO formatting for speech
+        const translated = await this.translationService.translate(text, sourceLang, targetLang, false);
 
         conversationStore.addMessage({
             id: this.currentTranscriptId,
@@ -184,8 +184,8 @@ class App {
         const partnerLang = document.getElementById('partner-lang').value;
         const userLang = document.getElementById('user-lang').value;
 
-        // Translate User -> Partner
-        const translated = await this.translationService.translate(text, userLang, partnerLang);
+        // Translate User -> Partner - WITH formatting for speech (Numbers/Symbols -> Words)
+        const translated = await this.translationService.translate(text, userLang, partnerLang, true);
 
         conversationStore.addMessage({
             id: Date.now(),
