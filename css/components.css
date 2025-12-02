@@ -130,6 +130,7 @@
 
 .message-row.partner .message-bubble {
     background: var(--surface-light);
+    color: var(--text-primary);
     border-bottom-left-radius: 4px;
     border: 1px solid var(--border-color);
 }
@@ -152,7 +153,8 @@
 
 .original-text {
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary);
+    opacity: 0.7;
     margin-bottom: 0.25rem;
     font-style: italic;
     display: block;

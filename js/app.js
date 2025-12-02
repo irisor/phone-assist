@@ -14,13 +14,30 @@ class App {
         this.isListening = false;
         this.currentTranscriptId = null; // To track the current live message being updated
 
+        this.initTheme();
         this.initEventListeners();
+    }
+
+    initTheme() {
+        // Load theme from localStorage or default to dark
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
     }
 
     initEventListeners() {
         // Mic Button
         const btnMic = document.getElementById('btn-mic');
         btnMic.addEventListener('click', () => this.toggleListening());
+
+        // Theme Toggle
+        document.getElementById('btn-theme-toggle').addEventListener('click', () => this.toggleTheme());
 
         // Export Buttons
         document.getElementById('btn-export-html').addEventListener('click', () => this.exportHTML());
