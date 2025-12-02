@@ -22,8 +22,9 @@ class App {
         const btnMic = document.getElementById('btn-mic');
         btnMic.addEventListener('click', () => this.toggleListening());
 
-        // Export Button
-        document.getElementById('btn-export').addEventListener('click', () => this.exportTranscript());
+        // Export Buttons
+        document.getElementById('btn-export-html').addEventListener('click', () => this.exportHTML());
+        document.getElementById('btn-export-pdf').addEventListener('click', () => this.exportPDF());
 
         // Language Selectors
         document.getElementById('partner-lang').addEventListener('change', (e) => {
@@ -38,6 +39,77 @@ class App {
                 this.handleUserSend();
             }
         });
+
+        // Push-to-Mute (Alt Key)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Alt') {
+                e.preventDefault();
+                if (!this.isMuted) this.setMute(true);
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Alt') {
+                this.setMute(false);
+            }
+        });
+
+        // Toggle Mute (Button) - Changed from Hold to Toggle per user feedback
+        const btnMute = document.getElementById('btn-mute-hold');
+
+        btnMute.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Toggle state
+            this.setMute(!this.isMuted);
+        });
+    }
+
+    setMute(shouldMute) {
+        if (this.isMuted === shouldMute) return; // No change
+        this.isMuted = shouldMute;
+        this.transcriptionService.setMute(shouldMute); // Sync state
+
+        // Hard Mute: Abort recognition to drop buffered audio
+        if (shouldMute) {
+            this.transcriptionService.abort();
+        } else {
+            // Restart if we were supposed to be listening
+            if (this.isListening) {
+                // Wait a bit for abort to complete
+                setTimeout(() => {
+                    try {
+                        this.transcriptionService.start(
+                            (text, isFinal) => this.handleIncomingSpeech(text, isFinal),
+                            (error) => console.error(error)
+                        );
+                    } catch (e) {
+                        console.error("Failed to restart after mute:", e);
+                    }
+                }, 200);
+            }
+        }
+
+        const btnMute = document.getElementById('btn-mute-hold');
+        const status = document.getElementById('connection-status');
+        const btnText = btnMute.querySelector('span');
+
+        if (shouldMute) {
+            btnMute.classList.add('active');
+            status.textContent = 'Muted (Reading...)';
+            status.style.color = '#ef4444';
+            if (btnText) btnText.textContent = "Tap to Unmute";
+        } else {
+            btnMute.classList.remove('active');
+            if (btnText) btnText.textContent = "Tap to Mute";
+
+            if (this.isListening) {
+                status.textContent = 'Listening...';
+                status.style.color = ''; // Reset
+            } else {
+                status.textContent = 'Ready';
+                status.style.color = '';
+            }
+        }
     }
 
     async toggleListening() {
@@ -70,9 +142,16 @@ class App {
     }
 
     async handleIncomingSpeech(text, isFinal) {
-        // Partner is speaking
+        // Check toggle state: Checked = Me, Unchecked = Partner
+        const isMe = document.getElementById('speaker-toggle').checked;
+
         const partnerLang = document.getElementById('partner-lang').value;
         const userLang = document.getElementById('user-lang').value;
+
+        // Determine Source/Target based on who is speaking
+        const sourceLang = isMe ? userLang : partnerLang;
+        const targetLang = isMe ? partnerLang : userLang;
+        const speakerName = isMe ? 'User' : 'Partner';
 
         // If it's a new utterance, create a new ID
         if (!this.currentTranscriptId) {
@@ -80,13 +159,14 @@ class App {
         }
 
         // Translate live
-        const translated = await this.translationService.translate(text, partnerLang, userLang);
+        const translated = await this.translationService.translate(text, sourceLang, targetLang);
 
         conversationStore.addMessage({
             id: this.currentTranscriptId,
-            speaker: 'Partner',
+            speaker: speakerName,
             originalText: text,
             translatedText: translated,
+            targetLang: targetLang, // Store for TTS
             timestamp: Date.now(),
             isFinal: isFinal
         });
@@ -112,14 +192,15 @@ class App {
             speaker: 'User',
             originalText: text,
             translatedText: translated,
+            targetLang: partnerLang, // User speaks to Partner
             timestamp: Date.now(),
             isFinal: true
         });
 
         input.value = '';
 
-        // Optional: Speak the translated text (TTS)
-        this.speak(translated, partnerLang);
+        // Auto-TTS removed per user request.
+        // this.speak(translated, partnerLang); 
     }
 
     speak(text, lang) {
@@ -130,15 +211,29 @@ class App {
         }
     }
 
-    exportTranscript() {
-        const text = conversationStore.exportText();
-        const blob = new Blob([text], { type: 'text/plain' });
+    exportHTML() {
+        const html = conversationStore.exportHTML();
+        const blob = new Blob([html], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `transcript-${new Date().toISOString()}.txt`;
+        a.download = `transcript-${new Date().toISOString()}.html`;
         a.click();
         URL.revokeObjectURL(url);
+    }
+
+    exportPDF() {
+        const html = conversationStore.exportHTML();
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(html);
+        printWindow.document.close();
+
+        // Wait for content to load then print
+        printWindow.onload = () => {
+            printWindow.focus();
+            printWindow.print();
+            // printWindow.close(); // Optional: close after print
+        };
     }
 }
 

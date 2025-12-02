@@ -10,7 +10,7 @@
     --border-color: #3f3f46;
     --glass-bg: rgba(28, 28, 33, 0.7);
     --glass-border: rgba(255, 255, 255, 0.1);
-    
+
     --font-family: 'Outfit', sans-serif;
     --radius-lg: 16px;
     --radius-md: 12px;
@@ -89,7 +89,8 @@ body {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #10b981; /* Green for ready */
+    background-color: #10b981;
+    /* Green for ready */
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
 }
 
@@ -100,9 +101,20 @@ body {
 }
 
 @keyframes pulse {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.2); }
-    100% { opacity: 1; transform: scale(1); }
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 /* Main Content */
@@ -136,7 +148,8 @@ body {
 .conversation-area {
     flex: 1;
     overflow-y: auto;
-    padding: 5rem 1.5rem 8rem 1.5rem; /* Top padding for visualizer, bottom for controls */
+    padding: 5rem 1.5rem 12rem 1.5rem;
+    /* Top padding for visualizer, bottom for controls */
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -153,14 +166,17 @@ body {
 /* Footer Controls */
 .control-bar {
     position: absolute;
-    bottom: 4rem; /* Above input bar */
+    bottom: 4rem;
+    /* Above input bar */
     left: 0;
     width: 100%;
     padding: 1rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(to top, var(--bg-color) 20%, transparent);
+    background: var(--bg-color);
+    /* Solid background to prevent overlap issues */
+    border-top: 1px solid var(--glass-border);
     z-index: 10;
 }
 
@@ -219,4 +235,9 @@ body {
 
 .btn-send:hover {
     background: #4f46e5;
+}
+
+.controls-right {
+    display: flex;
+    gap: 0.5rem;
 }

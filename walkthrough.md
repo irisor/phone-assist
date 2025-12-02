@@ -9,19 +9,25 @@ I have successfully built the **Phone Assist App** as a premium Vanilla Web Appl
 
 ## Features Implemented
 -   **Real-time Transcription**: Uses the Web Speech API to listen to your partner.
--   **Live Translation**: Mocks translation (e.g., English <-> German) for demonstration.
+-   **Manual Diarization**: Use the **"Mic Input" toggle** at the top to switch between "Partner" and "Me".
+-   **Push-to-Mute (Walkie-Talkie)**: 
+    -   **Desktop**: Hold **Alt Key** to temporarily mute the mic.
+    -   **Mobile**: Tap the **"Tap to Mute"** button (Toggle).
+-   **Live Translation**: 
+    -   **Real API**: Uses the **MyMemory Translation API** (Free Tier).
+    -   **Number Conversion**: Automatically converts numbers like "50" to "fifty".
 -   **Conversation History**: Displays a chat-like interface distinguishing between "Partner" and "User".
--   **Text-to-Speech**: When you send a reply, it is spoken out loud in the partner's language.
+-   **Text-to-Speech (TTS)**: 
+    -   Auto-TTS is **disabled**.
+    -   Click the small **Speaker Icon** next to your translated messages to hear them spoken out loud.
+-   **Export Options**: 
+    -   **HTML**: Download a formatted HTML file of the transcript.
+    -   **PDF**: Opens a print view where you can "Save as PDF".
 -   **Visualizer**: A real-time audio visualizer that reacts to microphone input.
--   **Export**: Click the download icon to save the transcript as a text file.
 
 ## Verification Steps
-1.  **Microphone Permission**: When you first click the microphone button, the browser will ask for permission. Click "Allow".
-2.  **Test Partner Speech**: Speak into the microphone (simulating the partner). You should see "Partner" bubbles appear with the text.
-3.  **Test User Reply**: Type a message in the input box and hit Enter. A "User" bubble will appear, and you should hear the computer speak the translation.
-4.  **Test Language Switch**: Change the "Partner" language dropdown and speak again.
-5.  **Test Export**: Click the download icon in the bottom right to save the conversation.
-
-## Note on APIs
--   **Speech-to-Text**: Currently uses the browser's built-in API. It works best in Chrome.
--   **Translation**: Currently using a **mock** service (it just appends language tags). To make it real, you would update `js/services/translationService.js` with a call to an API like DeepL or Google Translate.
+1.  **Microphone Permission**: Click the microphone button and allow access.
+2.  **Test Mute**: Tap "Tap to Mute" and verify no text appears when speaking.
+3.  **Test Export**: 
+    -   Click the **HTML Icon** to download a `.html` file.
+    -   Click the **PDF Icon** to open the print dialog. Choose "Save as PDF".

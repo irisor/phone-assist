@@ -1,26 +1,39 @@
+import { numberToWords } from '../utils/textFormatter.js';
+
 export class TranslationService {
     constructor() {
         // In a real app, this would be an API key or endpoint
     }
 
     async translate(text, sourceLang, targetLang) {
-        // Simulating network delay
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // 1. Convert numbers to words (User requirement)
+        // Pass sourceLang so we convert "123" to "einhundert..." if source is DE
+        const textWithWords = numberToWords(text, sourceLang);
 
-        // MOCK TRANSLATION LOGIC
-        // For demonstration, we'll just append [Translated] or do simple replacements
-        // A real implementation would call Google Translate / DeepL API here.
+        if (sourceLang === targetLang) return textWithWords;
 
-        if (sourceLang === targetLang) return text;
+        // 2. REAL TRANSLATION API (MyMemory)
+        // Free tier: 5000 chars/day.
+        try {
+            // Format language pair: "en|de"
+            const langPair = `${sourceLang.split('-')[0]}|${targetLang.split('-')[0]}`;
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(textWithWords)}&langpair=${langPair}`;
 
-        if (sourceLang.startsWith('de') && targetLang.startsWith('en')) {
-            return `(EN) ${text}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.responseStatus === 200) {
+                return data.responseData.translatedText;
+            } else {
+                console.warn("Translation API warning:", data.responseDetails);
+                // Fallback if API limit reached or error
+                return `[API Error] ${textWithWords}`;
+            }
+        } catch (error) {
+            console.error("Translation failed:", error);
+            return `[Offline] ${textWithWords}`;
         }
-
-        if (sourceLang.startsWith('en') && targetLang.startsWith('de')) {
-            return `(DE) ${text}`;
-        }
-
-        return `[${targetLang}] ${text}`;
     }
+
+    // pseudoTranslate removed as we are using real API
 }
