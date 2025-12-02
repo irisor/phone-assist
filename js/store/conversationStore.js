@@ -52,15 +52,24 @@ class ConversationStore {
     }
 
     exportHTML() {
+        const escapeHtml = (unsafe) => {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        };
+
         const rows = this.messages.map(m => {
             const time = new Date(m.timestamp).toLocaleTimeString();
             const speakerDisplay = m.speaker === 'User' ? 'Me' : m.speaker;
             return `
             <div class="message ${m.speaker.toLowerCase()}">
-                <div class="meta"><strong>${speakerDisplay}</strong> <span class="time">${time}</span></div>
+                <div class="meta"><strong>${escapeHtml(speakerDisplay)}</strong> <span class="time">${time}</span></div>
                 <div class="content">
-                    <div class="original">${m.originalText}</div>
-                    <div class="translated">${m.translatedText}</div>
+                    <div class="original">${escapeHtml(m.originalText)}</div>
+                    <div class="translated">${escapeHtml(m.translatedText)}</div>
                 </div>
             </div>`;
         }).join('');

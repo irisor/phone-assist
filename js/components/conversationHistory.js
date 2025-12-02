@@ -8,7 +8,13 @@ export class ConversationHistory {
     }
 
     render(messages) {
-        this.container.innerHTML = '';
+        // Optimization: Only append new messages, but ALWAYS re-render the last one
+        // because it might be receiving live updates (interim results).
+
+        const hasEmptyState = this.container.querySelector('.empty-state');
+        if (hasEmptyState) {
+            this.container.innerHTML = '';
+        }
 
         if (messages.length === 0) {
             this.container.innerHTML = `
@@ -18,7 +24,21 @@ export class ConversationHistory {
             return;
         }
 
-        messages.forEach(msg => {
+        // If we have fewer messages than before (clear), reset
+        if (messages.length < this.container.children.length) {
+            this.container.innerHTML = '';
+        }
+
+        // Start from the last existing message (to update it) or 0
+        let startIndex = Math.max(0, this.container.children.length - 1);
+
+        // Remove the last element so we can re-render it with latest data
+        if (this.container.children.length > 0) {
+            this.container.lastElementChild.remove();
+        }
+
+        for (let i = startIndex; i < messages.length; i++) {
+            const msg = messages[i];
             const row = document.createElement('div');
             row.className = `message-row ${msg.speaker.toLowerCase()}`;
 
@@ -30,27 +50,15 @@ export class ConversationHistory {
             translatedText.textContent = msg.translatedText;
             bubble.appendChild(translatedText);
 
-            // Meta info (Original text + timestamp)
-            const meta = document.createElement('div');
-            meta.className = 'message-meta';
-
+            // Meta info (Original text)
             if (msg.originalText && msg.originalText !== msg.translatedText) {
                 const original = document.createElement('span');
                 original.className = 'original-text';
                 original.textContent = msg.originalText;
-                bubble.insertBefore(original, translatedText); // Show original above translated
+                bubble.insertBefore(original, translatedText);
             }
 
-            // Timestamp
-            /*
-            const time = document.createElement('span');
-            time.textContent = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            meta.appendChild(time);
-            bubble.appendChild(meta);
-            */
-
-            // Speak Button (Only for User messages or if desired for all)
-            // User requested: "small icon for every translation of the text I wrote"
+            // Speak Button (Only for User messages)
             if (msg.speaker === 'User') {
                 const speakBtn = document.createElement('button');
                 speakBtn.className = 'btn-speak';
@@ -59,15 +67,12 @@ export class ConversationHistory {
                 speakBtn.onclick = () => {
                     this.speak(msg.translatedText, msg.targetLang);
                 };
-
-                // Append to bubble or translated text container
-                // Let's put it next to the translated text for clarity
                 translatedText.appendChild(speakBtn);
             }
 
             row.appendChild(bubble);
             this.container.appendChild(row);
-        });
+        }
 
         // Auto-scroll to bottom
         this.container.scrollTop = this.container.scrollHeight;

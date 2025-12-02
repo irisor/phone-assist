@@ -203,13 +203,7 @@ class App {
         // this.speak(translated, partnerLang); 
     }
 
-    speak(text, lang) {
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang;
-            window.speechSynthesis.speak(utterance);
-        }
-    }
+
 
     exportHTML() {
         const html = conversationStore.exportHTML();
