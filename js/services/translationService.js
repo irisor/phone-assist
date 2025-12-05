@@ -22,7 +22,12 @@ export class TranslationService {
             const langPair = `${sourceLang.split('-')[0]}|${targetLang.split('-')[0]}`;
             const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(textToTranslate)}&langpair=${langPair}`;
 
-            const response = await fetch(url);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
             const data = await response.json();
 
             if (data.responseStatus === 200) {
@@ -34,6 +39,9 @@ export class TranslationService {
             }
         } catch (error) {
             console.error("Translation failed:", error);
+            if (error.name === 'AbortError') {
+                return `[Timeout] ${textToTranslate}`;
+            }
             return `[Offline] ${textToTranslate}`;
         }
     }

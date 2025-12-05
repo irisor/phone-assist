@@ -3,6 +3,7 @@ import { TranscriptionService } from './services/transcriptionService.js';
 import { TranslationService } from './services/translationService.js';
 import { ConversationHistory } from './components/conversationHistory.js';
 import { AudioVisualizer } from './components/audioVisualizer.js';
+import { debugLogger } from './utils/debugLogger.js';
 
 class App {
     constructor() {
@@ -133,6 +134,8 @@ class App {
         const btnMic = document.getElementById('btn-mic');
         const status = document.getElementById('connection-status');
 
+        debugLogger.log("toggleListening called. Current state: " + this.isListening);
+
         if (this.isListening) {
             this.transcriptionService.stop();
             this.audioVisualizer.stop();
@@ -140,15 +143,27 @@ class App {
             btnMic.classList.remove('active');
             status.classList.remove('listening');
             status.textContent = 'Ready';
+            debugLogger.log("Stopped listening.");
         } else {
             try {
-                this.audioVisualizer.start();
+                debugLogger.log("Starting AudioVisualizer...");
+                await this.audioVisualizer.start();
+                debugLogger.log("AudioVisualizer started.");
+
+                debugLogger.log("Starting TranscriptionService...");
                 this.transcriptionService.start(
-                    (text, isFinal) => this.handleIncomingSpeech(text, isFinal),
+                    (text, isFinal) => {
+                        // debugLogger.log(`Result: ${text} (Final: ${isFinal})`); // Too noisy?
+                        this.handleIncomingSpeech(text, isFinal);
+                    },
                     (error) => {
+                        debugLogger.error(`Transcription error: ${error}`);
                         console.error("Transcription error:", error);
                         if (error === 'not-allowed') {
                             alert("Microphone access denied. Please check your settings.");
+                            this.toggleListening(); // Stop UI
+                        } else if (error === 'browser-not-supported') {
+                            alert("Your browser does not support speech recognition. Please use Chrome, Edge, or Safari.");
                             this.toggleListening(); // Stop UI
                         } else if (error === 'no-speech') {
                             // Ignore, just silence
@@ -165,7 +180,9 @@ class App {
                 btnMic.classList.add('active');
                 status.classList.add('listening');
                 status.textContent = 'Listening...';
+                debugLogger.log("Listening state set to true.");
             } catch (e) {
+                debugLogger.error(`Failed to start listening: ${e.message}`);
                 console.error("Failed to start listening", e);
                 alert("Could not access microphone. Please check permissions.");
             }
