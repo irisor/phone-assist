@@ -24,6 +24,13 @@ I have successfully built the **Phone Assist App** as a premium Vanilla Web Appl
     -   **PDF**: Opens a print view where you can "Save as PDF".
 -   **Visualizer**: A real-time audio visualizer that reacts to microphone input.
 
+## Mobile Troubleshooting
+-   **Layout**: If controls are hidden, the app now uses `dvh` units to fix this. Reload the page.
+-   **Transcription**:
+    -   **Android (Chrome)**: Works best. Ensure permissions are granted.
+    -   **iOS (Safari)**: Web Speech API is supported but can be finicky. If it stops, tap the mic button to restart.
+    -   **Error Messages**: The status bar will now show specific errors (e.g., "Network Error", "Not Allowed").
+
 ## Verification Steps
 1.  **Microphone Permission**: Click the microphone button and allow access.
 2.  **Test Mute**: Tap "Tap to Mute" and verify no text appears when speaking.

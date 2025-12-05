@@ -44,6 +44,9 @@ body {
     color: var(--text-primary);
     font-family: var(--font-family);
     height: 100vh;
+    /* Fallback */
+    height: 100dvh;
+    /* Mobile fix */
     overflow: hidden;
     display: flex;
     flex-direction: column;

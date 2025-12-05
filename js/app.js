@@ -145,7 +145,21 @@ class App {
                 this.audioVisualizer.start();
                 this.transcriptionService.start(
                     (text, isFinal) => this.handleIncomingSpeech(text, isFinal),
-                    (error) => console.error(error)
+                    (error) => {
+                        console.error("Transcription error:", error);
+                        if (error === 'not-allowed') {
+                            alert("Microphone access denied. Please check your settings.");
+                            this.toggleListening(); // Stop UI
+                        } else if (error === 'no-speech') {
+                            // Ignore, just silence
+                        } else if (error === 'network') {
+                            status.textContent = 'Network Error';
+                            status.style.color = '#ef4444';
+                        } else {
+                            status.textContent = `Error: ${error}`;
+                            status.style.color = '#ef4444';
+                        }
+                    }
                 );
                 this.isListening = true;
                 btnMic.classList.add('active');
