@@ -196,6 +196,17 @@ class App {
     }
 
     async handleIncomingSpeech(text, isFinal) {
+        if (!text || !text.trim()) return;
+
+        // Visual Feedback: Pulse the mic button
+        const btnMic = document.getElementById('btn-mic');
+        btnMic.classList.add('receiving');
+        // Remove class after a short delay if no more speech
+        if (this.receivingTimeout) clearTimeout(this.receivingTimeout);
+        this.receivingTimeout = setTimeout(() => {
+            btnMic.classList.remove('receiving');
+        }, 500);
+
         // Mic always listens to Partner per user request
         const isMe = false;
 
@@ -212,8 +223,16 @@ class App {
             this.currentTranscriptId = Date.now();
         }
 
-        // Translate live (Partner -> User) - NO formatting for speech
-        const translated = await this.translationService.translate(text, sourceLang, targetLang, false);
+        let translated = text; // Default to showing original text for interim
+
+        // OPTIMIZATION: Only translate FINAL results to save API calls and improve quality
+        if (isFinal) {
+            // Translate live (Partner -> User) - NO formatting for speech
+            translated = await this.translationService.translate(text, sourceLang, targetLang, false);
+        } else {
+            // For interim, maybe show a visual indicator that it's raw text?
+            // For now, just showing the text is fine.
+        }
 
         conversationStore.addMessage({
             id: this.currentTranscriptId,

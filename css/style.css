@@ -111,6 +111,30 @@ body {
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
 }
 
+.btn-circle.active {
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
+}
+
+.btn-circle.receiving {
+    animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
 .status-indicator.listening::before {
     background-color: var(--accent-color);
     box-shadow: 0 0 8px var(--accent-color);
