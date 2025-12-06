@@ -319,4 +319,11 @@ class App {
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new App();
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+            .then(() => console.log('Service Worker Registered'))
+            .catch((err) => console.error('Service Worker Failed', err));
+    }
 });
