@@ -15,6 +15,13 @@ export class TranslationService {
 
         if (sourceLang === targetLang) return textToTranslate;
 
+        // OPTIMIZATION: If text is only numbers, spaces, or punctuation, do NOT translate.
+        // This fixes "1 2 3" -> "(Page 2)" or "7 8 9" issues.
+        // Regex: Matches if string contains ONLY digits, spaces, and common punctuation.
+        if (/^[\d\s.,\-+()]*$/.test(textToTranslate)) {
+            return textToTranslate;
+        }
+
         // 2. REAL TRANSLATION API (MyMemory)
         // Free tier: 5000 chars/day.
         try {

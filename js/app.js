@@ -147,14 +147,9 @@ class App {
             debugLogger.log("Stopped listening.");
         } else {
             try {
-                const ENABLE_VISUALIZER = false; // Disabled due to mobile conflict
-                if (ENABLE_VISUALIZER) {
-                    debugLogger.log("Starting AudioVisualizer...");
-                    await this.audioVisualizer.start();
-                    debugLogger.log("AudioVisualizer started.");
-                } else {
-                    debugLogger.log("AudioVisualizer disabled (mobile stability).");
-                }
+                debugLogger.log("Starting AudioVisualizer (CSS) - Waiting for speech...");
+                // await this.audioVisualizer.start(); // Don't start immediately, wait for speech
+                debugLogger.log("AudioVisualizer ready.");
 
                 debugLogger.log("Starting TranscriptionService...");
                 this.transcriptionService.start(
@@ -180,6 +175,14 @@ class App {
                             status.textContent = `Error: ${error}`;
                             status.style.color = '#ef4444';
                         }
+                    },
+                    // onSpeechStart (Unreliable for stopping, so we use debounce in handleIncomingSpeech)
+                    () => {
+                        // debugLogger.log("Speech started");
+                    },
+                    // onSpeechEnd
+                    () => {
+                        // debugLogger.log("Speech ended");
                     }
                 );
                 this.isListening = true;
@@ -198,18 +201,20 @@ class App {
     async handleIncomingSpeech(text, isFinal) {
         if (!text || !text.trim()) return;
 
-        // Visual Feedback: Pulse the mic button AND animate bars
+        // Visual Feedback: Pulse mic AND animate bars (Debounced)
         const btnMic = document.getElementById('btn-mic');
         const visualizer = document.getElementById('audio-visualizer');
 
         btnMic.classList.add('receiving');
-        visualizer.classList.add('active');
+        this.audioVisualizer.start(); // Add .active
 
-        // Remove class after a short delay if no more speech
+        // Clear existing timeout to keep it alive
         if (this.receivingTimeout) clearTimeout(this.receivingTimeout);
+
+        // Stop after 500ms of silence
         this.receivingTimeout = setTimeout(() => {
             btnMic.classList.remove('receiving');
-            visualizer.classList.remove('active');
+            this.audioVisualizer.stop(); // Remove .active
         }, 500);
 
         // Mic always listens to Partner per user request

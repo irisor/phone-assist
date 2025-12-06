@@ -24,7 +24,7 @@ export class TranscriptionService {
         }
     }
 
-    start(onResult, onError) {
+    start(onResult, onError, onSpeechStart, onSpeechEnd) {
         if (!this.recognition) {
             console.error("TranscriptionService: No recognition object available.");
             if (onError) onError("browser-not-supported");
@@ -33,6 +33,17 @@ export class TranscriptionService {
 
         this.onResultCallback = onResult;
         this.onErrorCallback = onError;
+
+        // Speech detection events for visualizer
+        this.recognition.onspeechstart = () => {
+            console.log("TranscriptionService: Speech started");
+            if (onSpeechStart) onSpeechStart();
+        };
+
+        this.recognition.onspeechend = () => {
+            console.log("TranscriptionService: Speech ended");
+            if (onSpeechEnd) onSpeechEnd();
+        };
 
         this.recognition.onresult = (event) => {
             if (this.isMuted) return; // Ignore if muted
