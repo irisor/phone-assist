@@ -7,6 +7,7 @@ import { debugLogger } from './utils/debugLogger.js';
 
 class App {
     constructor() {
+        debugLogger.init(); // Initialize debugger immediately
         this.transcriptionService = new TranscriptionService();
         this.translationService = new TranslationService();
         this.conversationHistory = new ConversationHistory('conversation-history');
