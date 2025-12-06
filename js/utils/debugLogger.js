@@ -21,7 +21,7 @@ export const debugLogger = {
             overflow-y: auto;
             z-index: 9999;
             padding: 10px;
-            pointer-events: none; /* Let clicks pass through */
+            pointer-events: auto; /* Allow scrolling and selection */
             display: none; /* Hidden by default, toggled by user */
             border-top: 2px solid #333;
         `;
