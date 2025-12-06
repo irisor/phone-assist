@@ -35,7 +35,11 @@
 
         <main class="main-content">
             <div class="visualizer-container">
-                <canvas id="audio-visualizer"></canvas>
+                <!-- CSS-based Fake Visualizer (No AudioContext conflict) -->
+                <div id="audio-visualizer" class="audio-bars">
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
             </div>
 
             <div class="conversation-area" id="conversation-history">

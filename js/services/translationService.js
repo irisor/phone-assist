@@ -20,7 +20,10 @@ export class TranslationService {
         try {
             // Format language pair: "en|de"
             const langPair = `${sourceLang.split('-')[0]}|${targetLang.split('-')[0]}`;
-            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(textToTranslate)}&langpair=${langPair}`;
+            // Hack: Append a full stop to force the API to treat it as a sentence
+            // This prevents "1 2 3" -> "7 8 9 10" completion behavior
+            const queryText = textToTranslate.trim() + ".";
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(queryText)}&langpair=${langPair}`;
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
@@ -31,7 +34,12 @@ export class TranslationService {
             const data = await response.json();
 
             if (data.responseStatus === 200) {
-                return data.responseData.translatedText;
+                let result = data.responseData.translatedText;
+                // Remove the trailing dot if we added it and it's still there
+                if (result.endsWith('.')) {
+                    result = result.slice(0, -1);
+                }
+                return result;
             } else {
                 console.warn("Translation API warning:", data.responseDetails);
                 // Fallback: return original text so conversation isn't disrupted

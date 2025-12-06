@@ -198,13 +198,18 @@ class App {
     async handleIncomingSpeech(text, isFinal) {
         if (!text || !text.trim()) return;
 
-        // Visual Feedback: Pulse the mic button
+        // Visual Feedback: Pulse the mic button AND animate bars
         const btnMic = document.getElementById('btn-mic');
+        const visualizer = document.getElementById('audio-visualizer');
+
         btnMic.classList.add('receiving');
+        visualizer.classList.add('active');
+
         // Remove class after a short delay if no more speech
         if (this.receivingTimeout) clearTimeout(this.receivingTimeout);
         this.receivingTimeout = setTimeout(() => {
             btnMic.classList.remove('receiving');
+            visualizer.classList.remove('active');
         }, 500);
 
         // Mic always listens to Partner per user request
