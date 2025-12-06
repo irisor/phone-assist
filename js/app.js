@@ -147,9 +147,9 @@ class App {
             debugLogger.log("Stopped listening.");
         } else {
             try {
-                debugLogger.log("Starting AudioVisualizer...");
-                await this.audioVisualizer.start();
-                debugLogger.log("AudioVisualizer started.");
+                debugLogger.log("Starting AudioVisualizer... (SKIPPED for debugging)");
+                // await this.audioVisualizer.start();
+                debugLogger.log("AudioVisualizer skipped.");
 
                 debugLogger.log("Starting TranscriptionService...");
                 this.transcriptionService.start(
