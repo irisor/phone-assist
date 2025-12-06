@@ -53,7 +53,7 @@ export class TranscriptionService {
                 const transcript = event.results[i][0].transcript;
                 const isFinal = event.results[i].isFinal;
                 hasResults = true;
-                // console.log(`Transcription result: "${transcript}" (Final: ${isFinal})`);
+                console.log(`Transcription result: "${transcript}" (Final: ${isFinal})`);
                 if (this.onResultCallback) {
                     this.onResultCallback(transcript, isFinal);
                 }

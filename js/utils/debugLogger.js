@@ -34,28 +34,31 @@ export const debugLogger = {
 
         document.body.appendChild(this.container);
 
-        // Add a toggle button
-        const btn = document.createElement('button');
-        btn.textContent = "🐞";
-        btn.style.cssText = `
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            z-index: 10000;
-            background: #333;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        `;
-        btn.onclick = () => {
-            this.container.style.display = this.container.style.display === 'none' ? 'block' : 'none';
-        };
-        document.body.appendChild(btn);
+        document.body.appendChild(this.container);
+
+        // Secret Trigger: Tap the Logo 5 times to toggle debugger
+        const logo = document.querySelector('.logo');
+        if (logo) {
+            let tapCount = 0;
+            let lastTapTime = 0;
+
+            logo.addEventListener('click', () => {
+                const currentTime = Date.now();
+                if (currentTime - lastTapTime > 500) {
+                    tapCount = 0; // Reset if too slow
+                }
+
+                tapCount++;
+                lastTapTime = currentTime;
+
+                if (tapCount === 5) {
+                    this.toggle();
+                    tapCount = 0;
+                }
+            });
+            // Make logo clickable cursor to hint (optional, maybe keep it secret)
+            logo.style.cursor = 'pointer';
+        }
 
         // Override global console
         const originalLog = console.log;
@@ -70,6 +73,12 @@ export const debugLogger = {
             originalError.apply(console, args);
             this.appendLog('ERR', args.join(' '));
         };
+    },
+
+    toggle() {
+        if (this.container) {
+            this.container.style.display = this.container.style.display === 'none' ? 'block' : 'none';
+        }
     },
 
     appendLog(type, message) {

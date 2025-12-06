@@ -1,4 +1,5 @@
 import { formatForSpeech } from '../utils/textFormatter.js';
+import { debugLogger } from '../utils/debugLogger.js';
 
 export class TranslationService {
     constructor() {
@@ -13,12 +14,16 @@ export class TranslationService {
             textToTranslate = formatForSpeech(text, sourceLang);
         }
 
-        if (sourceLang === targetLang) return textToTranslate;
+        if (sourceLang === targetLang) {
+            debugLogger.log(`Translation skipped: Source (${sourceLang}) == Target (${targetLang})`);
+            return textToTranslate;
+        }
 
         // OPTIMIZATION: If text is only numbers, spaces, or punctuation, do NOT translate.
         // This fixes "1 2 3" -> "(Page 2)" or "7 8 9" issues.
         // Regex: Matches if string contains ONLY digits, spaces, and common punctuation.
         if (/^[\d\s.,\-+()]*$/.test(textToTranslate)) {
+            debugLogger.log(`Translation skipped: Number/Symbol detected "${textToTranslate}"`);
             return textToTranslate;
         }
 
@@ -27,10 +32,8 @@ export class TranslationService {
         try {
             // Format language pair: "en|de"
             const langPair = `${sourceLang.split('-')[0]}|${targetLang.split('-')[0]}`;
-            // Hack: Append a full stop to force the API to treat it as a sentence
-            // This prevents "1 2 3" -> "7 8 9 10" completion behavior
-            const queryText = textToTranslate.trim() + ".";
-            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(queryText)}&langpair=${langPair}`;
+
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(textToTranslate)}&langpair=${langPair}`;
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
@@ -39,15 +42,30 @@ export class TranslationService {
             clearTimeout(timeoutId);
 
             const data = await response.json();
+            debugLogger.log(`API Response: ${JSON.stringify(data)}`);
 
             if (data.responseStatus === 200) {
                 let result = data.responseData.translatedText;
-                // Remove the trailing dot if we added it and it's still there
-                if (result.endsWith('.')) {
-                    result = result.slice(0, -1);
+
+                // Helper to normalize text (remove punctuation, spaces, lowercase)
+                const normalize = (str) => str.toLowerCase().replace(/[?!.,\s]/g, '');
+
+                // FIX: Fuzzy check for identical text (ignoring punctuation like "?")
+                if (normalize(result) === normalize(textToTranslate) && data.matches) {
+                    debugLogger.log("Top match was identical (fuzzy). Searching alternatives...");
+                    for (const match of data.matches) {
+                        if (match.translation &&
+                            normalize(match.translation) !== normalize(textToTranslate)) {
+                            debugLogger.log(`Found better match: "${match.translation}"`);
+                            result = match.translation;
+                            break;
+                        }
+                    }
                 }
+
                 return result;
             } else {
+                debugLogger.log(`Translation API Error: ${data.responseDetails}`);
                 console.warn("Translation API warning:", data.responseDetails);
                 // Fallback: return original text so conversation isn't disrupted
                 return textToTranslate;
@@ -55,12 +73,13 @@ export class TranslationService {
         } catch (error) {
             console.error("Translation failed:", error);
             if (error.name === 'AbortError') {
-                console.warn("Translation timed out");
+                debugLogger.log("Translation timed out");
+            } else {
+                debugLogger.log(`Translation Exception: ${error.message}`);
             }
             // Fallback: return original text
             return textToTranslate;
         }
     }
-
-    // pseudoTranslate removed as we are using real API
 }
+// pseudoTranslate removed as we are using real API

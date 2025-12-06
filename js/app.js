@@ -201,6 +201,8 @@ class App {
     async handleIncomingSpeech(text, isFinal) {
         if (!text || !text.trim()) return;
 
+        debugLogger.log(`App received: "${text}" (Final: ${isFinal})`);
+
         // Visual Feedback: Pulse mic AND animate bars (Debounced)
         const btnMic = document.getElementById('btn-mic');
         const visualizer = document.getElementById('audio-visualizer');
