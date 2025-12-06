@@ -1,5 +1,7 @@
 export const debugLogger = {
     container: null,
+    version: "v1.2-" + new Date().toLocaleTimeString(), // Dynamic version based on load time
+    logCounter: 0,
 
     init() {
         if (this.container) return;
@@ -12,7 +14,7 @@ export const debugLogger = {
             left: 0;
             width: 100%;
             height: 200px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             color: #00ff00;
             font-family: monospace;
             font-size: 12px;
@@ -21,7 +23,15 @@ export const debugLogger = {
             padding: 10px;
             pointer-events: none; /* Let clicks pass through */
             display: none; /* Hidden by default, toggled by user */
+            border-top: 2px solid #333;
         `;
+
+        // Header with Version
+        const header = document.createElement('div');
+        header.style.cssText = "border-bottom: 1px solid #555; padding-bottom: 5px; margin-bottom: 5px; color: #fff; font-weight: bold;";
+        header.textContent = `Debug Log [${this.version}]`;
+        this.container.appendChild(header);
+
         document.body.appendChild(this.container);
 
         // Add a toggle button
@@ -40,30 +50,49 @@ export const debugLogger = {
             height: 40px;
             font-size: 20px;
             cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         `;
         btn.onclick = () => {
             this.container.style.display = this.container.style.display === 'none' ? 'block' : 'none';
         };
         document.body.appendChild(btn);
+
+        // Override global console
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = (...args) => {
+            originalLog.apply(console, args);
+            this.appendLog('LOG', args.join(' '));
+        };
+
+        console.error = (...args) => {
+            originalError.apply(console, args);
+            this.appendLog('ERR', args.join(' '));
+        };
+    },
+
+    appendLog(type, message) {
+        if (!this.container) return;
+
+        this.logCounter++;
+        const code = this.logCounter.toString().padStart(3, '0'); // 001, 002...
+
+        const line = document.createElement('div');
+        line.innerHTML = `<span style="color: #888; margin-right: 5px;">#${code}</span> <span style="font-weight:bold">[${type}]</span> ${message}`;
+
+        if (type === 'ERR') line.style.color = '#ff4444';
+        if (type === 'LOG') line.style.borderBottom = '1px solid #222';
+
+        this.container.appendChild(line);
+        this.container.scrollTop = this.container.scrollHeight;
     },
 
     log(message) {
-        if (!this.container) this.init();
-        const line = document.createElement('div');
-        line.textContent = `[LOG] ${message}`;
-        line.style.borderBottom = '1px solid #333';
-        this.container.appendChild(line);
-        this.container.scrollTop = this.container.scrollHeight;
-        console.log(message);
+        console.log(message); // Will trigger the override
     },
 
     error(message) {
-        if (!this.container) this.init();
-        const line = document.createElement('div');
-        line.textContent = `[ERR] ${message}`;
-        line.style.color = '#ff4444';
-        this.container.appendChild(line);
-        this.container.scrollTop = this.container.scrollHeight;
-        console.error(message);
+        console.error(message); // Will trigger the override
     }
 };
