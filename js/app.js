@@ -147,9 +147,14 @@ class App {
             debugLogger.log("Stopped listening.");
         } else {
             try {
-                debugLogger.log("Starting AudioVisualizer... (SKIPPED for debugging)");
-                // await this.audioVisualizer.start();
-                debugLogger.log("AudioVisualizer skipped.");
+                const ENABLE_VISUALIZER = false; // Disabled due to mobile conflict
+                if (ENABLE_VISUALIZER) {
+                    debugLogger.log("Starting AudioVisualizer...");
+                    await this.audioVisualizer.start();
+                    debugLogger.log("AudioVisualizer started.");
+                } else {
+                    debugLogger.log("AudioVisualizer disabled (mobile stability).");
+                }
 
                 debugLogger.log("Starting TranscriptionService...");
                 this.transcriptionService.start(

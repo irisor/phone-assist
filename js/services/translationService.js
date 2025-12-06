@@ -34,15 +34,16 @@ export class TranslationService {
                 return data.responseData.translatedText;
             } else {
                 console.warn("Translation API warning:", data.responseDetails);
-                // Fallback if API limit reached or error
-                return `[API Error] ${textToTranslate}`;
+                // Fallback: return original text so conversation isn't disrupted
+                return textToTranslate;
             }
         } catch (error) {
             console.error("Translation failed:", error);
             if (error.name === 'AbortError') {
-                return `[Timeout] ${textToTranslate}`;
+                console.warn("Translation timed out");
             }
-            return `[Offline] ${textToTranslate}`;
+            // Fallback: return original text
+            return textToTranslate;
         }
     }
 
