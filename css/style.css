@@ -620,7 +620,7 @@ body {
     /* Mobile adjustments to grid */
     .control-bar {
         padding: 1rem;
-        bottom: 6rem;
+        bottom: 5rem;
         align-items: start;
     }
 
@@ -630,11 +630,14 @@ body {
     }
 
     .conversation-area {
-        padding: 5rem 1rem 18rem 1rem;
+        padding: 5rem 1rem 30dvh 1rem;
+        /* Use dynamic viewport units for mobile browser UI */
     }
 
     .input-bar {
         padding: 1rem 1rem;
-        padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+        bottom: max(0px, env(safe-area-inset-bottom));
+        /* Ensure visibility above browser UI */
     }
 }
