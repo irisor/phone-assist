@@ -350,23 +350,32 @@ body {
 .control-bar {
     position: absolute;
     bottom: 4rem;
-    /* Above input bar */
     left: 0;
     width: 100%;
     padding: 1rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1rem;
     align-items: center;
     background: var(--bg-color);
-    /* Solid background to prevent overlap issues */
     border-top: 1px solid var(--glass-border);
     z-index: 10;
 }
 
+.controls-left {
+    grid-column: 1;
+}
+
 .controls-center {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    grid-column: 2;
+    display: flex;
+    justify-content: center;
+}
+
+.controls-right {
+    grid-column: 3;
+    display: flex;
+    gap: 1rem;
 }
 
 .input-bar {
@@ -596,7 +605,7 @@ body {
     color: var(--text-primary);
 }
 
-/* Mobile: Stack buttons vertically */
+/* Mobile: Adjust grid for mobile */
 @media (max-width: 480px) {
     .toast-actions {
         flex-direction: column;
@@ -606,26 +615,20 @@ body {
         width: 100%;
     }
 
-    /* Improve mobile control layout */
+    /* Mobile adjustments to grid */
     .control-bar {
-        padding: 1rem 1rem;
+        padding: 1rem;
         bottom: 5rem;
-        /* More space above input bar on mobile */
+        align-items: start;
     }
 
     .controls-right {
-        gap: 1.25rem;
-        /* Even more spacing on mobile */
-    }
-
-    .btn-icon {
-        padding: 0.75rem;
-        /* Larger tap targets */
+        flex-direction: column;
+        gap: 0.75rem;
     }
 
     .conversation-area {
         padding: 5rem 1rem 17rem 1rem;
-        /* Adjusted for mobile spacing */
     }
 
     .input-bar {
