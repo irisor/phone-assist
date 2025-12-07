@@ -331,8 +331,8 @@ body {
 .conversation-area {
     flex: 1;
     overflow-y: auto;
-    padding: 5rem 1.5rem 14rem 1.5rem;
-    /* Top padding for visualizer, bottom for controls */
+    padding: 5rem 1.5rem 16rem 1.5rem;
+    /* Top padding for visualizer, bottom for controls - increased for mobile */
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -375,6 +375,8 @@ body {
     left: 0;
     width: 100%;
     padding: 1rem 1.5rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    /* Add safe area for notched devices */
     background: var(--surface-color);
     border-top: 1px solid var(--border-color);
     display: flex;
@@ -422,7 +424,8 @@ body {
 
 .controls-right {
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem;
+    /* Increased gap for better mobile tap targets */
 }
 
 /* Toast Notifications */
@@ -601,5 +604,32 @@ body {
 
     .toast-action-btn {
         width: 100%;
+    }
+
+    /* Improve mobile control layout */
+    .control-bar {
+        padding: 1rem 1rem;
+        bottom: 5rem;
+        /* More space above input bar on mobile */
+    }
+
+    .controls-right {
+        gap: 1.25rem;
+        /* Even more spacing on mobile */
+    }
+
+    .btn-icon {
+        padding: 0.75rem;
+        /* Larger tap targets */
+    }
+
+    .conversation-area {
+        padding: 5rem 1rem 17rem 1rem;
+        /* Adjusted for mobile spacing */
+    }
+
+    .input-bar {
+        padding: 1rem 1rem;
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     }
 }
