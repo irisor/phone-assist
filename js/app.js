@@ -4,6 +4,7 @@ import { TranslationService } from './services/translationService.js';
 import { ConversationHistory } from './components/conversationHistory.js';
 import { AudioVisualizer } from './components/audioVisualizer.js';
 import { debugLogger } from './utils/debugLogger.js';
+import { getPhoneticSpelling } from './utils/phonetics.js';
 
 class App {
     constructor() {
@@ -308,12 +309,7 @@ class App {
         });
 
         input.value = '';
-
-        // Auto-TTS removed per user request.
-        // this.speak(translated, partnerLang); 
     }
-
-
 
     exportHTML() {
         const html = conversationStore.exportHTML();

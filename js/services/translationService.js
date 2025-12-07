@@ -7,23 +7,21 @@ export class TranslationService {
     }
 
     async translate(text, sourceLang, targetLang, shouldFormat = false) {
+        // OPTIMIZATION: If original text is only numbers, spaces, or punctuation, do NOT translate.
+        // This fixes "1 2 3" -> "g'suffa" (API weirdness)
+        if (/^[\d\s.,\-+()]*$/.test(text)) {
+            debugLogger.log(`Translation skipped: Number/Symbol detected "${text}"`);
+            return text;
+        }
+
         // 1. Format for speech (Numbers -> Words, Special Chars) ONLY if requested (User text)
         let textToTranslate = text;
-
         if (shouldFormat) {
             textToTranslate = formatForSpeech(text, sourceLang);
         }
 
         if (sourceLang === targetLang) {
             debugLogger.log(`Translation skipped: Source (${sourceLang}) == Target (${targetLang})`);
-            return textToTranslate;
-        }
-
-        // OPTIMIZATION: If text is only numbers, spaces, or punctuation, do NOT translate.
-        // This fixes "1 2 3" -> "(Page 2)" or "7 8 9" issues.
-        // Regex: Matches if string contains ONLY digits, spaces, and common punctuation.
-        if (/^[\d\s.,\-+()]*$/.test(textToTranslate)) {
-            debugLogger.log(`Translation skipped: Number/Symbol detected "${textToTranslate}"`);
             return textToTranslate;
         }
 

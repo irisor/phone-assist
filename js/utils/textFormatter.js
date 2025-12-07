@@ -69,7 +69,7 @@ export function formatForSpeech(text, lang = 'en') {
     let formatted = text;
 
     // 1. Convert Special Characters to universal English names
-    // These work across all languages and are easily understood
+    // Rule: "Data" symbols (/, @, #) -> Words. "Grammar" symbols (?, !) -> Keep as symbols.
     const specialChars = {
         '&': ' ampersand ',
         '%': ' percent ',
@@ -79,26 +79,19 @@ export function formatForSpeech(text, lang = 'en') {
         '*': ' asterisk ',
         '/': ' slash ',
         '\\': ' backslash ',
-        '?': ' question mark ',
-        '!': ' exclamation mark ',
         '@': ' at ',
         '#': ' hash ',
         '$': ' dollar ',
         '€': ' euro ',
         '£': ' pound ',
         '¥': ' yen ',
-        '(': ' open parenthesis ',
-        ')': ' close parenthesis ',
-        '[': ' open bracket ',
-        ']': ' close bracket ',
-        '{': ' open brace ',
-        '}': ' close brace ',
-        '<': ' less than ',
-        '>': ' greater than ',
         '_': ' underscore ',
         '|': ' pipe ',
         '~': ' tilde ',
-        '^': ' caret '
+        '^': ' caret ',
+        '<': ' less than ',
+        '>': ' greater than '
+        // Removed: ? ! . , ( ) [ ] { } : ; ' " (Grammar punctuation stays as symbols)
     };
 
     // Replace special chars

@@ -34,6 +34,14 @@ class ConversationStore {
         return this.messages;
     }
 
+    updateMessage(id, newTranslatedText) {
+        const msg = this.messages.find(m => m.id === id);
+        if (msg) {
+            msg.translatedText = newTranslatedText;
+            this.notify();
+        }
+    }
+
     clear() {
         this.messages = [];
         this.notify();

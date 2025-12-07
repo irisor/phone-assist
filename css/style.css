@@ -250,6 +250,56 @@ body {
     animation-duration: 419ms;
 }
 
+/* Message Actions */
+.message-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: flex-end;
+}
+
+.btn-icon-small {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 4px;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.edit-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 4px;
+    border-radius: 4px;
+    margin: -5px 0;
+    /* Compensate for padding */
+}
+
+.edit-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.btn-icon-small:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.spelling-row {
+    animation: fadeIn 0.2s ease-out;
+}
+
 .audio-bars.active span:nth-child(9) {
     height: 10%;
     animation-duration: 487ms;
