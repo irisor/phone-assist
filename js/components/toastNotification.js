@@ -16,7 +16,7 @@ export class ToastNotification {
         }
     }
 
-    show(message, type = 'info', duration = 5000) {
+    show(message, type = 'info', duration = 5000, actions = []) {
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
 
@@ -28,11 +28,35 @@ export class ToastNotification {
             error: '❌'
         };
 
+        const actionsHTML = actions.length > 0
+            ? `<div class="toast-actions">
+                ${actions.map((action, index) =>
+                `<button class="toast-action-btn toast-action-${index}" data-action="${index}">${action.label}</button>`
+            ).join('')}
+               </div>`
+            : '';
+
         toast.innerHTML = `
             <span class="toast-icon">${icons[type] || icons.info}</span>
-            <span class="toast-message">${message}</span>
+            <div class="toast-content">
+                <span class="toast-message">${message}</span>
+                ${actionsHTML}
+            </div>
             <button class="toast-close" aria-label="Close">×</button>
         `;
+
+        // Action button handlers
+        if (actions.length > 0) {
+            actions.forEach((action, index) => {
+                const btn = toast.querySelector(`[data-action="${index}"]`);
+                btn.onclick = () => {
+                    if (action.onClick) {
+                        action.onClick();
+                    }
+                    this.remove(toast);
+                };
+            });
+        }
 
         // Close button handler
         const closeBtn = toast.querySelector('.toast-close');
@@ -44,8 +68,8 @@ export class ToastNotification {
         // Trigger animation
         setTimeout(() => toast.classList.add('show'), 10);
 
-        // Auto-dismiss
-        if (duration > 0) {
+        // Auto-dismiss (disabled if actions present)
+        if (duration > 0 && actions.length === 0) {
             setTimeout(() => this.remove(toast), duration);
         }
 
@@ -63,20 +87,20 @@ export class ToastNotification {
     }
 
     // Convenience methods
-    info(message, duration = 5000) {
-        return this.show(message, 'info', duration);
+    info(message, duration = 5000, actions = []) {
+        return this.show(message, 'info', duration, actions);
     }
 
-    success(message, duration = 5000) {
-        return this.show(message, 'success', duration);
+    success(message, duration = 5000, actions = []) {
+        return this.show(message, 'success', duration, actions);
     }
 
-    warning(message, duration = 7000) {
-        return this.show(message, 'warning', duration);
+    warning(message, duration = 7000, actions = []) {
+        return this.show(message, 'warning', duration, actions);
     }
 
-    error(message, duration = 10000) {
-        return this.show(message, 'error', duration);
+    error(message, duration = 10000, actions = []) {
+        return this.show(message, 'error', duration, actions);
     }
 }
 

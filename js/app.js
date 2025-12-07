@@ -64,8 +64,10 @@ class App {
         document.getElementById('btn-theme-toggle').addEventListener('click', () => this.toggleTheme());
 
         // Export Buttons
-        document.getElementById('btn-export-html').addEventListener('click', () => this.exportHTML());
-        document.getElementById('btn-export-pdf').addEventListener('click', () => this.exportPDF());
+        document.getElementById('btn-export').addEventListener('click', () => this.exportConversation());
+        document.getElementById('btn-clear').addEventListener('click', () => this.clearConversation());
+        document.getElementById('btn-reload').addEventListener('click', () => this.reloadApp());
+        document.getElementById('btn-debug').addEventListener('click', () => this.toggleDebug());
 
         // Language Selectors
         document.getElementById('partner-lang').addEventListener('change', (e) => {
@@ -338,6 +340,108 @@ class App {
             printWindow.print();
             // printWindow.close(); // Optional: close after print
         };
+    }
+
+    async clearConversation() {
+        const messages = conversationStore.getMessages();
+
+        if (messages.length === 0) {
+            toast.info('No conversation to clear.');
+            return;
+        }
+
+        // Show interactive toast with action buttons
+        toast.warning(
+            'Clear conversation? This cannot be undone.',
+            0, // No auto-dismiss (duration)
+            [
+                {
+                    label: '⬇️ Download & Clear',
+                    onClick: async () => {
+                        await this.exportConversation();
+                        setTimeout(() => {
+                            conversationStore.clear();
+                            toast.success('Conversation downloaded and cleared!');
+                        }, 500);
+                    }
+                },
+                {
+                    label: '🗑️ Clear Now',
+                    onClick: () => {
+                        conversationStore.clear();
+                        toast.success('Conversation cleared!');
+                    }
+                },
+                {
+                    label: 'Cancel',
+                    onClick: () => {
+                        // Just close the toast
+                    }
+                }
+            ]
+        );
+    }
+
+    async exportConversation() {
+        // Quick export - just download HTML
+        await this.exportHTML();
+    }
+
+    reloadApp() {
+        const messages = conversationStore.getMessages();
+
+        // If there's a conversation, ask if user wants to download first
+        if (messages.length > 0) {
+            toast.warning(
+                'Reload app? Unsaved conversation will be lost.',
+                0, // No auto-dismiss
+                [
+                    {
+                        label: '⬇️ Download & Reload',
+                        onClick: async () => {
+                            await this.exportConversation();
+                            setTimeout(() => {
+                                this.performReload();
+                            }, 500);
+                        }
+                    },
+                    {
+                        label: '🔄 Reload Now',
+                        onClick: () => {
+                            this.performReload();
+                        }
+                    },
+                    {
+                        label: 'Cancel',
+                        onClick: () => {
+                            // Just close the toast
+                        }
+                    }
+                ]
+            );
+        } else {
+            // No conversation, just reload
+            this.performReload();
+        }
+    }
+
+    performReload() {
+        // Notify user before reload
+        toast.info('Reloading app...', 2000);
+
+        // Force reload for PWA updates
+        setTimeout(() => {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    registrations.forEach(registration => {
+                        registration.update();
+                    });
+                });
+            }
+
+            // Force hard reload
+            window.location.reload(true);
+        }, 500);
     }
 }
 

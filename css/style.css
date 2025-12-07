@@ -424,6 +424,7 @@ body {
     display: flex;
     gap: 0.5rem;
 }
+
 /* Toast Notifications */
 .toast-container {
     position: fixed;
@@ -524,5 +525,80 @@ body {
 
     .toast {
         min-width: 0;
+    }
+}
+
+/* Toast action buttons */
+.toast-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toast-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.toast-action-btn {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(139, 92, 246, 0.8));
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    flex: 1;
+    min-width: fit-content;
+}
+
+.toast-action-btn:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 1), rgba(139, 92, 246, 1));
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+}
+
+.toast-action-btn:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* First button (primary action) - more prominent */
+.toast-action-btn:first-child {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));
+}
+
+.toast-action-btn:first-child:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 1), rgba(5, 150, 105, 1));
+}
+
+/* Last button (cancel) - more subtle */
+.toast-action-btn:last-child {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+}
+
+.toast-action-btn:last-child:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: var(--text-primary);
+}
+
+/* Mobile: Stack buttons vertically */
+@media (max-width: 480px) {
+    .toast-actions {
+        flex-direction: column;
+    }
+
+    .toast-action-btn {
+        width: 100%;
     }
 }
