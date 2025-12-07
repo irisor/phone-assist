@@ -1,6 +1,8 @@
 
+
 import { conversationStore } from '../store/conversationStore.js';
 import { getPhoneticSpelling } from '../utils/phonetics.js';
+import { toast } from './toastNotification.js';
 
 export class ConversationHistory {
     constructor(containerId) {
@@ -179,7 +181,10 @@ export class ConversationHistory {
                     // Notify user that voice is not available
                     const langName = lang.split('-')[0].toUpperCase();
                     const fallbackName = fallbackLang.split('-')[0].toUpperCase();
-                    alert(`${langName} voice not available. Using ${fallbackName} voice instead.\n\nTo install ${langName} voice, check your system's Text-to-Speech settings.`);
+                    toast.warning(
+                        `${langName} voice not available. Using ${fallbackName} voice instead.\n\nTo install ${langName} voice, check your system's Text-to-Speech settings.`,
+                        8000
+                    );
 
                     // Fallback to user's language if target language not available
                     const fallbackCode = fallbackLang.split('-')[0];

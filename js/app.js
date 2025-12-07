@@ -5,6 +5,7 @@ import { ConversationHistory } from './components/conversationHistory.js';
 import { AudioVisualizer } from './components/audioVisualizer.js';
 import { debugLogger } from './utils/debugLogger.js';
 import { getPhoneticSpelling } from './utils/phonetics.js';
+import { toast } from './components/toastNotification.js';
 
 class App {
     constructor() {
@@ -187,10 +188,10 @@ class App {
                         debugLogger.error(`Transcription error: ${error}`);
                         console.error("Transcription error:", error);
                         if (error === 'not-allowed') {
-                            alert("Microphone access denied. Please check your settings.");
+                            toast.error('Microphone access denied. Please check your settings.');
                             this.toggleListening(); // Stop UI
                         } else if (error === 'browser-not-supported') {
-                            alert("Your browser does not support speech recognition. Please use Chrome, Edge, or Safari.");
+                            toast.error('Your browser does not support speech recognition. Please use Chrome, Edge, or Safari.');
                             this.toggleListening(); // Stop UI
                         } else if (error === 'no-speech') {
                             // Ignore, just silence
@@ -219,7 +220,7 @@ class App {
             } catch (e) {
                 debugLogger.error(`Failed to start listening: ${e.message}`);
                 console.error("Failed to start listening", e);
-                alert("Could not access microphone. Please check permissions.");
+                toast.error('Could not access microphone. Please check permissions.');
             }
         }
     }
