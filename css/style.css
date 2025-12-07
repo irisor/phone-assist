@@ -349,7 +349,7 @@ body {
 /* Footer Controls */
 .control-bar {
     position: absolute;
-    bottom: 4rem;
+    bottom: 5rem;
     left: 0;
     width: 100%;
     padding: 1rem 1.5rem;
@@ -374,6 +374,7 @@ body {
 }
 
 .controls-right {
+    align-items: flex-end;
     grid-column: 3;
     display: flex;
     gap: 1rem;
@@ -620,7 +621,6 @@ body {
     /* Mobile adjustments to grid */
     .control-bar {
         padding: 1rem;
-        bottom: 5rem;
         align-items: start;
     }
 
