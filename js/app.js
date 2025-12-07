@@ -17,7 +17,27 @@ class App {
         this.currentTranscriptId = null; // To track the current live message being updated
 
         this.initTheme();
+        this.initLanguages(); // Load saved languages
         this.initEventListeners();
+    }
+
+    initLanguages() {
+        const savedPartnerLang = localStorage.getItem('partner-lang');
+        const savedUserLang = localStorage.getItem('user-lang');
+
+        if (savedPartnerLang) {
+            document.getElementById('partner-lang').value = savedPartnerLang;
+            this.transcriptionService.setLanguage(savedPartnerLang);
+        }
+
+        if (savedUserLang) {
+            document.getElementById('user-lang').value = savedUserLang;
+        }
+    }
+
+    saveLanguages() {
+        localStorage.setItem('partner-lang', document.getElementById('partner-lang').value);
+        localStorage.setItem('user-lang', document.getElementById('user-lang').value);
     }
 
     initTheme() {
@@ -48,6 +68,11 @@ class App {
         // Language Selectors
         document.getElementById('partner-lang').addEventListener('change', (e) => {
             this.transcriptionService.setLanguage(e.target.value);
+            this.saveLanguages();
+        });
+
+        document.getElementById('user-lang').addEventListener('change', () => {
+            this.saveLanguages();
         });
 
         // User Input (Send)
