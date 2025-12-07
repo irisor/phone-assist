@@ -67,7 +67,6 @@ class App {
         document.getElementById('btn-export').addEventListener('click', () => this.exportConversation());
         document.getElementById('btn-clear').addEventListener('click', () => this.clearConversation());
         document.getElementById('btn-reload').addEventListener('click', () => this.reloadApp());
-        document.getElementById('btn-debug').addEventListener('click', () => this.toggleDebug());
 
         // Language Selectors
         document.getElementById('partner-lang').addEventListener('change', (e) => {

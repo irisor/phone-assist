@@ -439,7 +439,8 @@ body {
 }
 
 .toast {
-    background: var(--bg-secondary);
+    background: var(--bg-color);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 16px;
