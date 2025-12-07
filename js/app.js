@@ -265,8 +265,9 @@ class App {
 
         // OPTIMIZATION: Only translate FINAL results to save API calls and improve quality
         if (isFinal) {
-            // Translate live (Partner -> User) - NO formatting for speech
-            translated = await this.translationService.translate(text, sourceLang, targetLang, false);
+            // Translate live (Partner -> User) - NO number formatting (false)
+            // Partner said "24", we want "24" (easier to read)
+            translated = await this.translationService.translate(text, targetLang, sourceLang, false);
         } else {
             // For interim, maybe show a visual indicator that it's raw text?
             // For now, just showing the text is fine.
@@ -295,8 +296,10 @@ class App {
         const partnerLang = document.getElementById('partner-lang').value;
         const userLang = document.getElementById('user-lang').value;
 
-        // Translate User -> Partner - WITH formatting for speech (Numbers/Symbols -> Words)
-        const translated = await this.translationService.translate(text, userLang, partnerLang, true);
+        // Translate User -> Partner
+        // REVERT: Don't format numbers to words. Keep digits "24".
+        // Phonetics will handle "24" -> "24 vierundzwanzig".
+        const translated = await this.translationService.translate(text, partnerLang, userLang, false);
 
         conversationStore.addMessage({
             id: Date.now(),

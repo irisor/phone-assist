@@ -11,10 +11,13 @@ function convertNumber(n, lang) {
     // Ensure lang is a string and lower case
     const langCode = (lang || 'en').toLowerCase();
 
-    if (langCode.startsWith('de')) {
-        return convertNumberDE(n);
-    }
-    return convertNumberEN(n);
+    if (langCode.startsWith('de')) return convertNumberDE(n);
+    if (langCode.startsWith('fr')) return convertNumberFR(n);
+    if (langCode.startsWith('es')) return convertNumberES(n);
+    if (langCode.startsWith('it')) return convertNumberIT(n);
+    if (langCode.startsWith('he')) return convertNumberHE(n);
+    if (langCode.startsWith('en')) return convertNumberEN(n);
+    return n.toString(); // Fallback
 }
 
 function convertNumberEN(n) {
@@ -62,6 +65,104 @@ function convertNumberDE(n) {
         return hundredStr + (rest ? convertNumberDE(rest) : "");
     }
 
+    return n.toString();
+}
+
+function convertNumberFR(n) {
+    if (n < 0) return "moins " + convertNumberFR(-n);
+    if (n == 0) return "zéro";
+    const ones = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+    const tens = ["", "", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"];
+
+    if (n < 20) return ones[n];
+
+    if (n < 70) {
+        return tens[Math.floor(n / 10)] + (n % 10 ? (n % 10 === 1 ? "-et-un" : "-" + ones[n % 10]) : "");
+    }
+    if (n < 80) { // 70-79
+        return "soixante-" + (n === 71 ? "et-onze" : ones[n - 60]);
+    }
+    if (n < 100) { // 80-99
+        if (n < 90) return "quatre-vingt" + (n === 80 ? "s" : "-" + ones[n - 80]);
+        return "quatre-vingt-" + ones[n - 80];
+    }
+    if (n < 1000) {
+        if (n === 100) return "cent";
+        const hundreds = Math.floor(n / 100);
+        return (hundreds > 1 ? ones[hundreds] + "-cent" : "cent") + (n % 100 ? " " + convertNumberFR(n % 100) : "");
+    }
+    return n.toString();
+}
+
+function convertNumberES(n) {
+    if (n < 0) return "menos " + convertNumberES(-n);
+    if (n == 0) return "cero";
+    const ones = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve"];
+    const tens = ["", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"];
+
+    if (n < 20) return ones[n];
+    if (n < 30) return "veinti" + ones[n - 20]; // veintiuno
+
+    if (n < 100) {
+        return tens[Math.floor(n / 10)] + (n % 10 ? " y " + ones[n % 10] : "");
+    }
+    if (n < 1000) {
+        if (n === 100) return "cien"; // exact 100
+        const hundredsMap = ["", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
+        return hundredsMap[Math.floor(n / 100)] + (n % 100 ? " " + convertNumberES(n % 100) : "");
+    }
+    return n.toString();
+}
+
+function convertNumberIT(n) {
+    if (n < 0) return "meno " + convertNumberIT(-n);
+    if (n == 0) return "zero";
+    const ones = ["", "uno", "due", "tre", "quattro", "cinque", "sei", "sette", "otto", "nove", "dieci", "undici", "dodici", "tredici", "quattordici", "quindici", "sedici", "diciassette", "diciotto", "diciannove"];
+    const tens = ["", "", "venti", "trenta", "quaranta", "cinquanta", "sessanta", "settanta", "ottanta", "novanta"];
+
+    if (n < 20) return ones[n];
+
+    if (n < 100) {
+        let ten = tens[Math.floor(n / 10)];
+        let one = ones[n % 10];
+        // Vowel drop: venti + uno -> ventuno
+        if (one && (one.startsWith('u') || one.startsWith('o'))) {
+            ten = ten.slice(0, -1);
+        }
+        return ten + one;
+    }
+    if (n < 1000) {
+        let hundred = "cento";
+        if (Math.floor(n / 100) > 1) {
+            hundred = convertNumberIT(Math.floor(n / 100)) + "cento";
+        }
+        return hundred + (n % 100 ? convertNumberIT(n % 100) : "");
+    }
+    return n.toString();
+}
+
+function convertNumberHE(n) {
+    // Feminine counting (default for abstract numbers) - Using Hebrew Script
+    if (n < 0) return "מינוס " + convertNumberHE(-n);
+    if (n == 0) return "אפס";
+
+    // 0-19
+    const ones = ["", "אחת", "שתיים", "שלוש", "ארבע", "חמש", "שש", "שבע", "שמונה", "תשע", "עשר",
+        "אחת עשרה", "שתים עשרה", "שלוש עשרה", "ארבע עשרה", "חמש עשרה", "שש עשרה", "שבע עשרה", "שמונה עשרה", "תשע עשרה"];
+
+    // 20-90
+    const tens = ["", "", "עשרים", "שלושים", "ארבעים", "חמישים", "שישים", "שבעים", "שמונים", "תשעים"];
+
+    if (n < 20) return ones[n];
+
+    if (n < 100) {
+        // "Esrim ve-achat" -> "עשרים ואחת"
+        return tens[Math.floor(n / 10)] + (n % 10 ? " ו" + ones[n % 10] : "");
+    }
+    if (n < 1000) {
+        const hundreds = ["", "מאה", "מאתיים", "שלוש מאות", "ארבע מאות", "חמש מאות", "שש מאות", "שבע מאות", "שמונה מאות", "תשע מאות"];
+        return hundreds[Math.floor(n / 100)] + (n % 100 ? " " + convertNumberHE(n % 100) : "");
+    }
     return n.toString();
 }
 

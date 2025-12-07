@@ -93,7 +93,7 @@ export class ConversationHistory {
                 bubble.insertBefore(original, translatedText);
             }
 
-            // Speak Button (Only for User messages)
+            // Speak & Spell Buttons (Only for User messages - they need to spell to Partner)
             if (msg.speaker === 'User') {
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'message-actions';
@@ -106,21 +106,23 @@ export class ConversationHistory {
                 spellBtn.className = 'btn-icon-small';
                 spellBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 7V17M4 17L9 7M4 17L9 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 7V17M14 17L19 7M14 17L19 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                 spellBtn.title = "Show Phonetic Spelling";
-                spellBtn.onclick = () => {
+                spellBtn.onclick = (e) => {
+                    e.stopPropagation(); // Stop edit mode from triggering
                     let spellingRow = bubble.querySelector('.spelling-row');
                     if (spellingRow) {
                         spellingRow.remove();
                     } else {
                         spellingRow = document.createElement('div');
                         spellingRow.className = 'spelling-row';
-                        spellingRow.style.fontSize = '0.85em';
+                        spellingRow.style.fontSize = '0.9em';
                         spellingRow.style.marginTop = '8px';
-                        spellingRow.style.color = '#fff';
-                        spellingRow.style.background = 'rgba(255,255,255,0.1)';
-                        spellingRow.style.padding = '4px 8px';
+                        spellingRow.style.color = '#eee';
+                        spellingRow.style.background = 'rgba(0,0,0,0.2)'; // Darker bg for contrast
+                        spellingRow.style.padding = '8px';
                         spellingRow.style.borderRadius = '4px';
-                        // FIX: Spell the TRANSLATED text (Partner's language), not the original
-                        spellingRow.textContent = getPhoneticSpelling(msg.translatedText, msg.targetLang);
+                        spellingRow.style.lineHeight = '1.5';
+                        // FIX: Use innerHTML for multi-line formatting
+                        spellingRow.innerHTML = getPhoneticSpelling(msg.translatedText, msg.targetLang);
                         bubble.appendChild(spellingRow);
                     }
                 };
@@ -131,12 +133,15 @@ export class ConversationHistory {
                 speakBtn.className = 'btn-icon-small';
                 speakBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
                 speakBtn.title = "Speak translation";
-                speakBtn.onclick = () => {
-                    this.speak(msg.translatedText, msg.targetLang);
+                speakBtn.onclick = (e) => {
+                    e.stopPropagation(); // Stop edit mode from triggering
+                    // Get user's language for fallback
+                    const userLang = document.getElementById('user-lang')?.value || 'en-US';
+                    this.speak(msg.translatedText, msg.targetLang, userLang);
                 };
                 actionsDiv.appendChild(speakBtn);
 
-                translatedText.appendChild(actionsDiv);
+                bubble.appendChild(actionsDiv);
             }
 
             row.appendChild(bubble);
@@ -147,17 +152,54 @@ export class ConversationHistory {
         this.container.scrollTop = this.container.scrollHeight;
     }
 
-    speak(text, lang) {
+    speak(text, lang, fallbackLang = 'en-US') {
         if ('speechSynthesis' in window) {
-            // Detect language? For now default to partner's lang (German usually) or auto-detect
-            // Since we don't have the lang in the message object, we might need to guess or pass it.
-            // For MVP, let's assume if it's User speaking, it's translated to Partner's lang.
-            // Ideally, we should store 'targetLang' in the message.
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+
             const utterance = new SpeechSynthesisUtterance(text);
+
             if (lang) {
                 utterance.lang = lang;
+
+                // Try to find a voice for the specified language
+                const voices = window.speechSynthesis.getVoices();
+                const langCode = lang.split('-')[0]; // he-IL -> he
+
+                // Find a voice that matches the language
+                const matchingVoice = voices.find(voice =>
+                    voice.lang.toLowerCase().startsWith(langCode.toLowerCase())
+                );
+
+                if (matchingVoice) {
+                    utterance.voice = matchingVoice;
+                } else {
+                    console.warn(`No voice found for language: ${lang}. Falling back to ${fallbackLang}.`);
+
+                    // Notify user that voice is not available
+                    const langName = lang.split('-')[0].toUpperCase();
+                    const fallbackName = fallbackLang.split('-')[0].toUpperCase();
+                    alert(`${langName} voice not available. Using ${fallbackName} voice instead.\n\nTo install ${langName} voice, check your system's Text-to-Speech settings.`);
+
+                    // Fallback to user's language if target language not available
+                    const fallbackCode = fallbackLang.split('-')[0];
+                    const fallbackVoice = voices.find(voice =>
+                        voice.lang.toLowerCase().startsWith(fallbackCode.toLowerCase())
+                    );
+                    if (fallbackVoice) {
+                        utterance.voice = fallbackVoice;
+                        utterance.lang = fallbackVoice.lang;
+                    }
+                }
             }
+
+            utterance.onerror = (event) => {
+                console.error('Speech synthesis error:', event);
+            };
+
             window.speechSynthesis.speak(utterance);
+        } else {
+            console.error('Speech synthesis not supported in this browser');
         }
     }
 }

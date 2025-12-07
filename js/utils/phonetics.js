@@ -14,7 +14,7 @@ const phoneticAlphabets = {
         'K': 'Kah', 'L': 'Ell', 'M': 'Emm', 'N': 'Enn', 'O': 'Oh',
         'P': 'Peh', 'Q': 'Kuh', 'R': 'Err', 'S': 'Ess', 'T': 'Teh',
         'U': 'Uh', 'V': 'Fow', 'W': 'Veh', 'X': 'Icks', 'Y': 'Ypsilon', 'Z': 'Tsett',
-        'Ä': 'Ah-Umlaut', 'Ö': 'Oh-Umlaut', 'Ü': 'Uh-Umlaut', 'ß': 'Ess-Tsett',
+        'Ä': 'Umlaut-Ah', 'Ö': 'Umlaut-Oh', 'Ü': 'Umlaut-Uh', 'ß': 'Ess-Tsett',
         '0': 'Null', '1': 'Eins', '2': 'Zwei', '3': 'Drei', '4': 'Vier',
         '5': 'Fünf', '6': 'Sechs', '7': 'Sieben', '8': 'Acht', '9': 'Neun'
     },
@@ -45,26 +45,107 @@ const phoneticAlphabets = {
         '0': 'Zero', '1': 'Uno', '2': 'Due', '3': 'Tre', '4': 'Quattro',
         '5': 'Cinque', '6': 'Sei', '7': 'Sette', '8': 'Otto', '9': 'Nove'
     },
-    'he': { // Hebrew Letter Names (Transliterated for pronunciation)
-        'א': 'Aleph', 'ב': 'Bet', 'ג': 'Gimel', 'ד': 'Dalet', 'ה': 'Hey',
-        'ו': 'Vav', 'ז': 'Zayin', 'ח': 'Het', 'ט': 'Tet', 'י': 'Yud',
-        'כ': 'Khaf', 'ך': 'Khaf Sofit', 'ל': 'Lamed', 'מ': 'Mem', 'ם': 'Mem Sofit',
-        'נ': 'Nun', 'ן': 'Nun Sofit', 'ס': 'Samekh', 'ע': 'Ayin', 'פ': 'Pey',
-        'ף': 'Pey Sofit', 'צ': 'Tsadi', 'ץ': 'Tsadi Sofit', 'ק': 'Kuf', 'ר': 'Resh',
-        'ש': 'Shin', 'ת': 'Tav'
-    },
-    // Fallback for others to English Letter Names
+    'he': { // Hebrew Letter Names (in Hebrew script)
+        'א': 'אָלֶף', 'ב': 'בֵּית', 'ג': 'גִּימֶל', 'ד': 'דָּלֶת', 'ה': 'הֵא',
+        'ו': 'וָו', 'ז': 'זַיִן', 'ח': 'חֵית', 'ט': 'טֵית', 'י': 'יוּד',
+        'כ': 'כַּף', 'ך': 'כַּף סוֹפִית', 'ל': 'לָמֶד', 'מ': 'מֵם', 'ם': 'מֵם סוֹפִית',
+        'נ': 'נוּן', 'ן': 'נוּן סוֹפִית', 'ס': 'סָמֶךְ', 'ע': 'עַיִן', 'פ': 'פֵּא',
+        'ף': 'פֵּא סוֹפִית', 'צ': 'צַדִי', 'ץ': 'צַדִי סוֹפִית', 'ק': 'קוּף', 'ר': 'רֵישׁ',
+        'ש': 'שִׁין', 'ת': 'תָּו'
+    }
 };
+
+const symbolNames = {
+    'en': {
+        '?': 'Question Mark', '!': 'Exclamation Mark', '.': 'Dot', ',': 'Comma',
+        '@': 'At', '#': 'Hash', '$': 'Dollar', '%': 'Percent',
+        '&': 'Ampersand', '*': 'Asterisk', '+': 'Plus', '=': 'Equals',
+        '-': 'Dash', '/': 'Slash', '\\': 'Backslash',
+        "'": 'Apostrophe', "’": 'Apostrophe'
+    },
+    'de': {
+        '?': 'Fragezeichen', '!': 'Ausrufezeichen', '.': 'Punkt', ',': 'Komma',
+        '@': 'At-Zeichen', '#': 'Raute', '$': 'Dollar', '%': 'Prozent',
+        '&': 'Und-Zeichen', '*': 'Stern', '+': 'Plus', '=': 'Gleich',
+        '-': 'Bindestrich', '/': 'Schrägstrich', '\\': 'Rückstrich',
+        "'": 'Apostroph', "’": 'Apostroph'
+    },
+    'fr': {
+        '?': 'Point d’interrogation', '!': 'Point d’exclamation', '.': 'Point', ',': 'Virgule',
+        '@': 'Arobase', '#': 'Dièse', '-': 'Tiret', '/': 'Slash',
+        "'": 'Apostrophe', "’": 'Apostrophe'
+    },
+    'es': {
+        '?': 'Interrogación', '!': 'Exclamación', '.': 'Punto', ',': 'Coma',
+        '@': 'Arroba', '#': 'Almohadilla', '-': 'Guión', '/': 'Barra',
+        "'": 'Apóstrofe', "’": 'Apóstrofe'
+    },
+    'it': {
+        '?': 'Punto interrogativo', '!': 'Punto esclamativo', '.': 'Punto', ',': 'Virgola',
+        '@': 'Chiocciola', '#': 'Cancelletto', '-': 'Trattino', '/': 'Barra',
+        "'": 'Apostrofo', "’": 'Apostrofo'
+    },
+    'he': {
+        '?': 'סימן שאלה', '!': 'סימן קריאה', '.': 'נקודה', ',': 'פסיק',
+        '@': 'שטרודל', '#': 'סולמית', '$': 'דולר', '%': 'אחוז',
+        '&': 'וגם', '*': 'כוכבית', '+': 'פלוס', '=': 'שווה',
+        '-': 'מקף', '/': 'לוכסן', '\\': 'לוכסן הפוך',
+        '_': 'קו תחתון',
+        "'": 'גרש', "’": 'גרש'
+    }
+};
+
+import { numberToWords } from './textFormatter.js';
 
 export function getPhoneticSpelling(text, lang = 'en') {
     const langCode = lang.split('-')[0].toLowerCase(); // en-US -> en
     const alphabet = phoneticAlphabets[langCode] || phoneticAlphabets['en'];
+    const symbols = symbolNames[langCode] || symbolNames['en'];
 
-    return text.toUpperCase().split('').map(char => {
-        if (alphabet[char]) {
-            return alphabet[char];
-        }
-        if (char === ' ') return '[Space]';
-        return char;
-    }).join(' - ');
+    // Split into sentences (keeping structure)
+    // Regex matches: Any chars that are NOT sentence enders, followed by optional sentence ender.
+    const sentences = text.match(/[^.!?]+[.!?]*|/g).filter(s => s.trim().length > 0);
+
+    return sentences.map(sentence => {
+        // Group by Words within sentence
+        const words = sentence.split(/\s+/).filter(w => w.length > 0);
+
+        const spelledWords = words.map(word => {
+            // FIX: Smart Number Handling (Simple & Complex)
+            // Matches: Numbers, potentially separated by /, -, ., +
+            // Example: "24", "24-26", "3/1", "1+2"
+            if (/^[\d\/\-\.\+]+$/.test(word) && /\d/.test(word)) {
+                const parts = word.split(/([/\-\.\+])/).filter(p => p.length > 0);
+
+                const pronouncedParts = parts.map(part => {
+                    if (/\d+/.test(part)) {
+                        return numberToWords(part, langCode);
+                    }
+                    if (symbols[part]) {
+                        // Display symbol name (e.g., "Slash")
+                        return symbols[part];
+                    }
+                    return part;
+                });
+
+                // Check if any transformation actually happened (to avoid "1" -> "1")
+                // If it looks like speech, show it.
+                const pronunciation = pronouncedParts.join(' ');
+                return `<span style="opacity:0.7">${word} <span style="font-style:italic">(${pronunciation})</span></span>`;
+            }
+
+            return word.toUpperCase().split('').map(char => {
+                if (alphabet[char]) {
+                    return alphabet[char];
+                }
+                if (symbols[char]) {
+                    return `<span style="opacity:0.7">${char} ${symbols[char]}</span>`;
+                }
+                return char;
+            }).join(' - ');
+        });
+
+        // Words on separate lines
+        return spelledWords.join('<br>');
+    }).join('<br><br>'); // Gap between sentences
 }
