@@ -159,7 +159,15 @@ export class ConversationHistory {
             // Cancel any ongoing speech
             window.speechSynthesis.cancel();
 
-            const utterance = new SpeechSynthesisUtterance(text);
+            // Special handling for German TTS
+            let textToSpeak = text;
+            if (lang && lang.startsWith('de')) {
+                // Replace "text/text" with "text Schrägstrich text"
+                // Using regex with global flag to catch all occurrences
+                textToSpeak = textToSpeak.replace(/\//g, ' Schrägstrich ');
+            }
+
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
 
             if (lang) {
                 utterance.lang = lang;

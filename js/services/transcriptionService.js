@@ -1,115 +1,116 @@
+import { TranscriptionProviderFactory } from './transcriptionProviders.js';
+
 export class TranscriptionService {
     constructor() {
-        this.recognition = null;
+        this.currentProviderId = localStorage.getItem('transcriptionProvider') || 'webspeech';
+        this.provider = null;
         this.isListening = false;
-        this.isMuted = false; // New flag
-        this.onResultCallback = null;
-        this.onErrorCallback = null;
-        this.language = 'de-DE'; // Default partner language
+        this.isMuted = false;
 
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            this.recognition = new SpeechRecognition();
-            this.recognition.continuous = true;
-            this.recognition.interimResults = true;
-        } else {
-            console.error('Web Speech API not supported in this browser.');
+        // Cache callbacks so we can re-attach when switching providers
+        this.callbacks = { onResult: null, onError: null, onSpeechStart: null, onSpeechEnd: null };
+        this.language = 'de-DE';
+
+        this.initProvider();
+    }
+
+    initProvider() {
+        // Cleanup old provider if exists
+        if (this.provider) {
+            this.provider.stop();
+        }
+
+        this.provider = TranscriptionProviderFactory.getProvider(this.currentProviderId);
+        this.provider.setLanguage(this.language);
+        this.provider.setMute(this.isMuted);
+    }
+
+    setProvider(providerId) {
+        if (this.currentProviderId === providerId) return;
+
+        this.currentProviderId = providerId;
+        const wasListening = this.isListening;
+
+        this.stop(); // Stop current
+        this.initProvider(); // Create new
+
+        // If we were listening, restart with new provider
+        if (wasListening) {
+            // Pass cached callbacks
+            this.start(
+                this.callbacks.onResult,
+                this.callbacks.onError,
+                this.callbacks.onSpeechStart,
+                this.callbacks.onSpeechEnd
+            );
         }
     }
 
     setLanguage(lang) {
+        const oldLang = this.language;
         this.language = lang;
-        if (this.recognition) {
-            this.recognition.lang = lang;
+
+        if (this.provider) {
+            this.provider.setLanguage(lang);
+
+            // WebSpeech (and others) often require a restart to pick up the new language
+            if (this.isListening && oldLang !== lang) {
+                console.log(`TranscriptionService: Restarting to apply language change (${oldLang} -> ${lang})`);
+
+                // Stop the current session
+                this.stop();
+
+                // Restart immediately with the new language
+                // We use a small timeout to ensure the 'stop' and 'end' events clear up
+                setTimeout(() => {
+                    if (!this.isListening) { // Double check we didn't get stopped elsewhere
+                        this.start(
+                            this.callbacks.onResult,
+                            this.callbacks.onError,
+                            this.callbacks.onSpeechStart,
+                            this.callbacks.onSpeechEnd
+                        );
+                    }
+                }, 100);
+            }
         }
     }
 
     start(onResult, onError, onSpeechStart, onSpeechEnd) {
-        if (!this.recognition) {
-            console.error("TranscriptionService: No recognition object available.");
-            if (onError) onError("browser-not-supported");
-            return;
-        }
+        this.callbacks = { onResult, onError, onSpeechStart, onSpeechEnd };
 
-        this.onResultCallback = onResult;
-        this.onErrorCallback = onError;
+        if (!this.provider) this.initProvider();
 
-        // Speech detection events for visualizer
-        this.recognition.onspeechstart = () => {
-            console.log("TranscriptionService: Speech started");
-            if (onSpeechStart) onSpeechStart();
-        };
-
-        this.recognition.onspeechend = () => {
-            console.log("TranscriptionService: Speech ended");
-            if (onSpeechEnd) onSpeechEnd();
-        };
-
-        this.recognition.onresult = (event) => {
-            if (this.isMuted) return; // Ignore if muted
-
-            let hasResults = false;
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                const transcript = event.results[i][0].transcript;
-                const isFinal = event.results[i].isFinal;
-                hasResults = true;
-                console.log(`Transcription result: "${transcript}" (Final: ${isFinal})`);
-                if (this.onResultCallback) {
-                    this.onResultCallback(transcript, isFinal);
-                }
-            }
-            if (!hasResults) {
-                console.log("TranscriptionService: onresult fired but no results found.");
-            }
-        };
-
-        this.recognition.onnomatch = (event) => {
-            console.log("TranscriptionService: No match found.");
-        };
-
-        this.recognition.onerror = (event) => {
-            console.error('Speech recognition error', event.error);
-            if (this.onErrorCallback) this.onErrorCallback(event.error);
-        };
-
-        this.recognition.onend = () => {
-            console.log("TranscriptionService: Recognition ended.");
-            if (this.isListening && !this.isMuted) {
-                // Auto-restart if it stops unexpectedly while supposed to be listening
-                console.log("TranscriptionService: Auto-restarting...");
-                try {
-                    this.recognition.start();
-                } catch (e) {
-                    console.log("TranscriptionService: Restart failed", e);
-                }
-            }
-        };
-
-        this.recognition.lang = this.language;
         try {
-            this.recognition.start();
+            this.provider.start(
+                onResult,
+                onError,
+                onSpeechStart,
+                onSpeechEnd
+            );
             this.isListening = true;
-            console.log(`TranscriptionService: Started listening in ${this.language}`);
+            console.log(`TranscriptionService: Started listening in ${this.language} using ${this.currentProviderId}`);
         } catch (e) {
             console.error("TranscriptionService: Failed to start", e);
-            if (this.onErrorCallback) this.onErrorCallback(e.message);
+            if (onError) onError(e.message);
         }
     }
 
     stop() {
-        if (!this.recognition) return;
+        if (!this.provider) return;
         this.isListening = false;
-        this.recognition.stop();
+        this.provider.stop();
     }
 
     abort() {
-        if (!this.recognition) return;
-        // abort() stops immediately and does not fire 'end' event in some browsers, or fires it differently.
-        // We want to drop current buffer.
-        this.recognition.abort();
+        if (!this.provider) return;
+        this.provider.abort();
     }
 
     setMute(muted) {
         this.isMuted = muted;
+        if (this.provider) {
+            this.provider.setMute(muted);
+        }
     }
 }
