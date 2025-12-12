@@ -6,6 +6,8 @@ import { AudioVisualizer } from './components/audioVisualizer.js';
 import { debugLogger } from './utils/debugLogger.js';
 import { getPhoneticSpelling } from './utils/phonetics.js';
 import { toast } from './components/toastNotification.js';
+import { SettingsModal } from './components/settingsModal.js';
+import { settingsStore } from './store/settingsStore.js';
 
 class App {
     constructor() {
@@ -20,6 +22,31 @@ class App {
 
         this.initTheme();
         this.initLanguages(); // Load saved languages
+
+        // Initialize Settings Modal
+        this.settingsModal = new SettingsModal(() => {
+            // Callback when settings are saved
+            const newSettings = settingsStore.getSettings();
+
+            // Update services with new providers
+            if (this.translationService && newSettings.translationProvider) {
+                this.translationService.setProvider(newSettings.translationProvider);
+            }
+            if (this.transcriptionService && newSettings.transcriptionProvider) {
+                this.transcriptionService.setProvider(newSettings.transcriptionProvider);
+            }
+
+            // Reset status to Ready to clear any potential error messages
+            const status = document.getElementById('connection-status');
+            if (status) {
+                status.textContent = 'Ready';
+                status.style.color = '';
+                status.classList.remove('listening');
+            }
+
+            toast.success('Settings saved!');
+        });
+
         this.initEventListeners();
     }
 
@@ -66,7 +93,14 @@ class App {
         // Export Buttons
         document.getElementById('btn-export').addEventListener('click', () => this.exportConversation());
         document.getElementById('btn-clear').addEventListener('click', () => this.clearConversation());
+        document.getElementById('btn-clear').addEventListener('click', () => this.clearConversation());
         document.getElementById('btn-reload').addEventListener('click', () => this.reloadApp());
+
+        // Settings Button
+        const settingsBtn = document.getElementById('open-settings-btn');
+        if (settingsBtn) {
+            settingsBtn.onclick = () => this.settingsModal.show();
+        }
 
         // Language Selectors
         document.getElementById('partner-lang').addEventListener('change', (e) => {
@@ -292,28 +326,53 @@ class App {
 
     async handleUserSend() {
         const input = document.getElementById('user-input');
+        const btnSend = document.getElementById('btn-send');
         const text = input.value.trim();
+
         if (!text) return;
 
-        const partnerLang = document.getElementById('partner-lang').value;
-        const userLang = document.getElementById('user-lang').value;
+        // Visual Feedback: Immediate disable & loading state
+        input.disabled = true;
+        btnSend.disabled = true;
 
-        // Translate User -> Partner
-        // REVERT: Don't format numbers to words. Keep digits "24".
-        // Phonetics will handle "24" -> "24 vierundzwanzig".
-        const translated = await this.translationService.translate(text, partnerLang, userLang, false);
+        // Save original button content
+        const originalBtnContent = btnSend.innerHTML;
+        // Simple loading spinner
+        btnSend.innerHTML = `<svg class="animate-spin" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10" opacity="0.75"></path></svg>`;
 
-        conversationStore.addMessage({
-            id: Date.now(),
-            speaker: 'User',
-            originalText: text,
-            translatedText: translated,
-            targetLang: partnerLang, // User speaks to Partner
-            timestamp: Date.now(),
-            isFinal: true
-        });
+        try {
+            const partnerLang = document.getElementById('partner-lang').value;
+            const userLang = document.getElementById('user-lang').value;
 
-        input.value = '';
+            // Translate User -> Partner
+            // REVERT: Don't format numbers to words. Keep digits "24".
+            // Phonetics will handle "24" -> "24 vierundzwanzig".
+            const translated = await this.translationService.translate(text, partnerLang, userLang, false);
+
+            conversationStore.addMessage({
+                id: Date.now(),
+                speaker: 'User',
+                originalText: text,
+                translatedText: translated,
+                targetLang: partnerLang, // User speaks to Partner
+                timestamp: Date.now(),
+                isFinal: true
+            });
+
+            input.value = '';
+        } catch (error) {
+            console.error("Send error:", error);
+            toast.error("Failed to translate/send message. Please try again.");
+            // Do NOT clear input so user can retry
+        } finally {
+            // Restore UI state
+            input.disabled = false;
+            btnSend.disabled = false;
+            btnSend.innerHTML = originalBtnContent;
+
+            // Re-focus input for next message
+            input.focus();
+        }
     }
 
     exportHTML() {
